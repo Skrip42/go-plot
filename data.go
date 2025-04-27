@@ -4,11 +4,25 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/Skrip42/go-plot/internal/helpers"
 )
 
 const tmpPrefix = "go-gnuplot-"
 
-func (b *builder) AddPoints(name string, points [][]float64) {
+type dataOption struct {
+	compile func() string
+}
+
+func (o dataOption) Compile() string {
+	return o.compile()
+}
+
+func (b *builder) RemoveData(name string) {
+	delete(b.data, name)
+}
+
+func (b *builder) AddPoints(name string, points [][]float64, options ...dataOption) {
 	b.data[name] = data{
 		compile: func() (string, error) {
 			f, err := os.CreateTemp(os.TempDir(), tmpPrefix)
@@ -30,7 +44,39 @@ func (b *builder) AddPoints(name string, points [][]float64) {
 				f.WriteString(fmt.Sprintf(pattern, line...))
 			}
 			f.Close()
-			return "\"" + f.Name() + "\"", nil
+			return helpers.EscapeString(f.Name()) + " " + helpers.Compile(options), nil
+		},
+	}
+}
+
+func (b *builder) AddDataFile(name string, filename string, options ...dataOption) {
+	b.data[name] = data{
+		compile: func() (string, error) {
+			return helpers.EscapeString(filename) + " " + helpers.Compile(options), nil
+		},
+	}
+}
+
+func (b *builder) AddFunction(name string, function string, options ...dataOption) {
+	b.data[name] = data{
+		compile: func() (string, error) {
+			return function + " " + helpers.Compile(options), nil
+		},
+	}
+}
+
+func WithDataTitle(title titlespec) dataOption {
+	return dataOption{
+		compile: func() string {
+			return title.compile()
+		},
+	}
+}
+
+func WithDataStyle(style Style) dataOption {
+	return dataOption{
+		compile: func() string {
+			return "with " + string(style)
 		},
 	}
 }

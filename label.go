@@ -11,14 +11,27 @@ func (o labelOption) Compile() string {
 }
 
 func (b *builder) SetXLabel(name string, options ...labelOption) {
-	b.commands = append(
-		b.commands,
-		command{
-			compile: func() string {
-				return "set xlabel \"" + name + "\" " + helpers.Compile(options)
-			},
+	b.commands["xlabel"] = command{
+		compile: func() string {
+			return "set xlabel " + helpers.EscapeString(name) + " " + helpers.Compile(options)
 		},
-	)
+	}
+}
+
+func (b *builder) SetYLabel(name string, options ...labelOption) {
+	b.commands["ylabel"] = command{
+		compile: func() string {
+			return "set ylabel " + helpers.EscapeString(name) + " " + helpers.Compile(options)
+		},
+	}
+}
+
+func (b *builder) SetZLabel(name string, options ...labelOption) {
+	b.commands["zlabel"] = command{
+		compile: func() string {
+			return "set zlabel " + helpers.EscapeString(name) + " " + helpers.Compile(options)
+		},
+	}
 }
 
 func WithLabelColor(color colorspec) labelOption {

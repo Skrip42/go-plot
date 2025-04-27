@@ -43,6 +43,19 @@ func compileData(data map[string]data) (string, error) {
 	return strings.Join(parts, ", "), nil
 }
 
+func (b *builder) DebugPlot() error {
+	for _, command := range b.commands {
+		fmt.Println(command.compile())
+	}
+	compiledData, err := compileData(b.data)
+	if err != nil {
+		return fmt.Errorf("failed to compile data: %w", err)
+	}
+	fmt.Println("plot " + compiledData)
+	fmt.Println("exit")
+	return nil
+}
+
 func (b *builder) Plot(ctx context.Context) error {
 	err := sync.OnceValue(initialize)()
 	if err != nil {
@@ -51,7 +64,7 @@ func (b *builder) Plot(ctx context.Context) error {
 
 	eg, egCtx := errgroup.WithContext(ctx)
 
-	cmd := exec.CommandContext(egCtx, gnuplotCmd)
+	cmd := exec.CommandContext(egCtx, gnuplotCmd, "-persist")
 	ready := make(chan struct{})
 
 	eg.Go(func() error {

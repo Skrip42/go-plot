@@ -4,18 +4,25 @@ import "context"
 
 type GoPlot interface {
 	SetXLabel(name string, options ...labelOption)
-	AddPoints(name string, points [][]float64)
+	SetYLabel(name string, options ...labelOption)
+	SetZLabel(name string, options ...labelOption)
+	AddPoints(name string, points [][]float64, options ...dataOption)
+	AddDataFile(name string, filename string, options ...dataOption)
+	AddFunction(name string, function string, options ...dataOption)
+	SetOutput(filename string)
+	SetTerminal(term terminal)
 	Plot(ctx context.Context) error
+	DebugPlot() error
 }
 
 type builder struct {
-	commands []command
+	commands map[string]command
 	data     map[string]data
 }
 
 func NewGoPlot() GoPlot {
 	return &builder{
-		commands: []command{},
+		commands: map[string]command{},
 		data:     map[string]data{},
 	}
 }

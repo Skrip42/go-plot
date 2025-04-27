@@ -22,8 +22,18 @@ func main() {
 		"X label",
 		goplot.WithLabelColor(goplot.RGBColor(12, 89, 200)),
 	)
-	plot.AddPoints("line", points)
+	plot.AddPoints(
+		"line",
+		points,
+		goplot.WithDataStyle(goplot.StyleLines),
+		goplot.WithDataTitle(goplot.Title("line!")),
+	)
+	plot.AddFunction("sinus", "sin(x)")
+	plot.SetOutput("./example/simple/simple.svg")
+	plot.SetTerminal(goplot.TerminalSvg(goplot.WithSvgSize(1000, 1000, goplot.SvgSizeDynamic)))
 
-	err := plot.Plot(context.Background())
+	err := plot.DebugPlot()
+	fmt.Println(err)
+	err = plot.Plot(context.Background())
 	fmt.Println(err)
 }
